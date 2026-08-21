@@ -1,0 +1,289 @@
+{
+  "materials": {
+    "CdSe": {
+      "material_name": "Cadmium Selenide",
+      "formula": "CdSe",
+      "bulk_bandgap_eV": 1.74,
+      "electron_effective_mass": 0.13,
+      "hole_effective_mass": 0.45,
+      "relative_dielectric_constant": 9.4,
+      "lattice_constant_angstrom": 4.30,
+      "crystal_structure": "Wurtzite",
+      "conduction_band_edge_eV": -4.30,
+      "valence_band_edge_eV": -6.04,
+      "hydrostatic_deformation_pot_eV": -3.0,
+      "source": "Madelung Semiconductors Handbook (2004), Reference Document Table 5.1",
+      "notes": "Direct gap II-VI semiconductor. Heavy-hole effective mass used for 1S ground state."
+    },
+    "CdS": {
+      "material_name": "Cadmium Sulfide",
+      "formula": "CdS",
+      "bulk_bandgap_eV": 2.45,
+      "electron_effective_mass": 0.20,
+      "hole_effective_mass": 0.70,
+      "relative_dielectric_constant": 9.0,
+      "lattice_constant_angstrom": 4.14,
+      "crystal_structure": "Wurtzite/Zinc Blende",
+      "conduction_band_edge_eV": -4.15,
+      "valence_band_edge_eV": -6.60,
+      "hydrostatic_deformation_pot_eV": -3.2,
+      "source": "Madelung (2004), Reference Document Table 5.1",
+      "notes": "Wide bandgap II-VI shell material; exhibits quasi-Type II behavior with CdSe at larger shell thickness."
+    },
+    "CdTe": {
+      "material_name": "Cadmium Telluride",
+      "formula": "CdTe",
+      "bulk_bandgap_eV": 1.50,
+      "electron_effective_mass": 0.096,
+      "hole_effective_mass": 0.38,
+      "relative_dielectric_constant": 10.2,
+      "lattice_constant_angstrom": 6.482,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -3.90,
+      "valence_band_edge_eV": -5.40,
+      "hydrostatic_deformation_pot_eV": -3.5,
+      "source": "Madelung (2004), Reference Document Table 5.1",
+      "notes": "Direct gap II-VI. Forms staggered Type II heterostructures with CdSe."
+    },
+    "ZnS": {
+      "material_name": "Zinc Sulfide",
+      "formula": "ZnS",
+      "bulk_bandgap_eV": 3.65,
+      "electron_effective_mass": 0.25,
+      "hole_effective_mass": 0.60,
+      "relative_dielectric_constant": 8.3,
+      "lattice_constant_angstrom": 5.41,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -3.40,
+      "valence_band_edge_eV": -7.05,
+      "hydrostatic_deformation_pot_eV": -4.0,
+      "source": "Madelung (2004), Reference Document Table 5.1",
+      "notes": "Wide bandgap passivating shell. Creates strong Type I confinement with CdSe and InP."
+    },
+    "ZnSe": {
+      "material_name": "Zinc Selenide",
+      "formula": "ZnSe",
+      "bulk_bandgap_eV": 2.70,
+      "electron_effective_mass": 0.17,
+      "hole_effective_mass": 0.60,
+      "relative_dielectric_constant": 9.2,
+      "lattice_constant_angstrom": 5.668,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -3.70,
+      "valence_band_edge_eV": -6.40,
+      "hydrostatic_deformation_pot_eV": -4.2,
+      "source": "Madelung (2004), Reference Document Table 5.1",
+      "notes": "Direct gap II-VI; intermediate lattice matching for core/shell systems."
+    },
+    "ZnTe": {
+      "material_name": "Zinc Telluride",
+      "formula": "ZnTe",
+      "bulk_bandgap_eV": 2.26,
+      "electron_effective_mass": 0.17,
+      "hole_effective_mass": 0.60,
+      "relative_dielectric_constant": 9.0,
+      "lattice_constant_angstrom": 6.101,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -3.53,
+      "valence_band_edge_eV": -5.79,
+      "hydrostatic_deformation_pot_eV": -4.5,
+      "source": "Madelung (2004), Reference Document Table 5.1",
+      "notes": "Forms Type II alignment with ZnSe (staggered band offsets)."
+    },
+    "PbS": {
+      "material_name": "Lead Sulfide",
+      "formula": "PbS",
+      "bulk_bandgap_eV": 0.41,
+      "electron_effective_mass": 0.09,
+      "hole_effective_mass": 0.09,
+      "relative_dielectric_constant": 170.0,
+      "lattice_constant_angstrom": 5.936,
+      "crystal_structure": "Rock Salt",
+      "conduction_band_edge_eV": -4.60,
+      "valence_band_edge_eV": -5.01,
+      "hydrostatic_deformation_pot_eV": -2.0,
+      "source": "Reference Document Table 5.2, Madelung (2004)",
+      "notes": "Narrow-gap IV-VI semiconductor for NIR/SWIR; high dielectric constant and symmetric carrier masses."
+    },
+    "PbSe": {
+      "material_name": "Lead Selenide",
+      "formula": "PbSe",
+      "bulk_bandgap_eV": 0.28,
+      "electron_effective_mass": 0.05,
+      "hole_effective_mass": 0.05,
+      "relative_dielectric_constant": 210.0,
+      "lattice_constant_angstrom": 6.117,
+      "crystal_structure": "Rock Salt",
+      "conduction_band_edge_eV": -4.70,
+      "valence_band_edge_eV": -4.98,
+      "hydrostatic_deformation_pot_eV": -2.1,
+      "source": "Reference Document Table 5.2",
+      "notes": "Ultra-narrow gap IV-VI; giant exciton Bohr radius (approx 46 nm)."
+    },
+    "PbTe": {
+      "material_name": "Lead Telluride",
+      "formula": "PbTe",
+      "bulk_bandgap_eV": 0.32,
+      "electron_effective_mass": 0.04,
+      "hole_effective_mass": 0.04,
+      "relative_dielectric_constant": 420.0,
+      "lattice_constant_angstrom": 6.462,
+      "crystal_structure": "Rock Salt",
+      "conduction_band_edge_eV": -4.50,
+      "valence_band_edge_eV": -4.82,
+      "hydrostatic_deformation_pot_eV": -2.2,
+      "source": "Reference Document Table 5.2",
+      "notes": "Mid-IR IV-VI semiconductor with very high dielectric constant."
+    },
+    "InP": {
+      "material_name": "Indium Phosphide",
+      "formula": "InP",
+      "bulk_bandgap_eV": 1.35,
+      "electron_effective_mass": 0.078,
+      "hole_effective_mass": 0.60,
+      "relative_dielectric_constant": 12.5,
+      "lattice_constant_angstrom": 5.869,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -4.38,
+      "valence_band_edge_eV": -5.73,
+      "hydrostatic_deformation_pot_eV": -6.0,
+      "source": "Vurgaftman et al. (2001), Reference Document Table 5.3",
+      "notes": "Direct gap cadmium-free III-V quantum dot material."
+    },
+    "InAs": {
+      "material_name": "Indium Arsenide",
+      "formula": "InAs",
+      "bulk_bandgap_eV": 0.36,
+      "electron_effective_mass": 0.023,
+      "hole_effective_mass": 0.41,
+      "relative_dielectric_constant": 15.15,
+      "lattice_constant_angstrom": 6.058,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -4.90,
+      "valence_band_edge_eV": -5.26,
+      "hydrostatic_deformation_pot_eV": -5.8,
+      "source": "Vurgaftman et al. (2001), Reference Document Table 5.3",
+      "notes": "Narrow gap III-V with small electron mass leading to large quantum confinement shifts."
+    },
+    "GaAs": {
+      "material_name": "Gallium Arsenide",
+      "formula": "GaAs",
+      "bulk_bandgap_eV": 1.42,
+      "electron_effective_mass": 0.067,
+      "hole_effective_mass": 0.48,
+      "relative_dielectric_constant": 12.9,
+      "lattice_constant_angstrom": 5.653,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -4.07,
+      "valence_band_edge_eV": -5.49,
+      "hydrostatic_deformation_pot_eV": -7.0,
+      "source": "Vurgaftman et al. (2001), Reference Document Table 5.3",
+      "notes": "Prototypical III-V direct bandgap semiconductor."
+    },
+    "InSb": {
+      "material_name": "Indium Antimonide",
+      "formula": "InSb",
+      "bulk_bandgap_eV": 0.17,
+      "electron_effective_mass": 0.014,
+      "hole_effective_mass": 0.43,
+      "relative_dielectric_constant": 16.8,
+      "lattice_constant_angstrom": 6.479,
+      "crystal_structure": "Zinc Blende",
+      "conduction_band_edge_eV": -4.59,
+      "valence_band_edge_eV": -4.76,
+      "hydrostatic_deformation_pot_eV": -6.2,
+      "source": "Vurgaftman et al. (2001), Reference Document Table 5.3",
+      "notes": "Very small effective mass (0.014 m0) and large confinement potential."
+    }
+  },
+  "default_core_shell_pairs": {
+    "CdSe/ZnS": {
+      "core": "CdSe",
+      "shell": "ZnS",
+      "delta_ec_eV": 0.90,
+      "delta_ev_eV": 0.70,
+      "alignment_type": "Type I",
+      "description": "Deep potential well for both electrons and holes. Outstanding luminescence passivation."
+    },
+    "CdSe/CdS": {
+      "core": "CdSe",
+      "shell": "CdS",
+      "delta_ec_eV": 0.15,
+      "delta_ev_eV": 0.56,
+      "alignment_type": "Quasi-Type II",
+      "description": "Small conduction band offset allows electron delocalization into shell while hole remains confined."
+    },
+    "CdSe/ZnSe": {
+      "core": "CdSe",
+      "shell": "ZnSe",
+      "delta_ec_eV": 0.60,
+      "delta_ev_eV": 0.60,
+      "alignment_type": "Type I",
+      "description": "Type I confinement with lower lattice mismatch than CdSe/ZnS."
+    },
+    "CdTe/CdSe": {
+      "core": "CdTe",
+      "shell": "CdSe",
+      "delta_ec_eV": -0.40,
+      "delta_ev_eV": 0.64,
+      "alignment_type": "Type II",
+      "description": "Staggered Type II alignment. Electron localizes in shell, hole in core."
+    },
+    "ZnTe/ZnSe": {
+      "core": "ZnTe",
+      "shell": "ZnSe",
+      "delta_ec_eV": -0.17,
+      "delta_ev_eV": 0.61,
+      "alignment_type": "Type II",
+      "description": "Type II staggered alignment for charge separation."
+    },
+    "InP/ZnS": {
+      "core": "InP",
+      "shell": "ZnS",
+      "delta_ec_eV": 0.98,
+      "delta_ev_eV": 1.32,
+      "alignment_type": "Type I",
+      "description": "Cadmium-free Type I heterostructure with high luminescence efficiency."
+    },
+    "PbS/CdS": {
+      "core": "PbS",
+      "shell": "CdS",
+      "delta_ec_eV": 0.45,
+      "delta_ev_eV": 1.59,
+      "alignment_type": "Type I",
+      "description": "Deep confinement for infrared PbS core passivated by wide-gap CdS shell."
+    }
+  },
+  "default_alloys": {
+    "CdSe_CdS": {
+      "matA": "CdSe",
+      "matB": "CdS",
+      "bowing_parameter_eV": 0.30,
+      "description": "CdSe(x)S(1-x) ternary alloy spanning orange-red to green-blue."
+    },
+    "CdTe_CdSe": {
+      "matA": "CdTe",
+      "matB": "CdSe",
+      "bowing_parameter_eV": 0.75,
+      "description": "CdTe(x)Se(1-x) alloy spanning near-IR to visible."
+    },
+    "InAs_GaAs": {
+      "matA": "InAs",
+      "matB": "GaAs",
+      "bowing_parameter_eV": 0.475,
+      "description": "In(x)Ga(1-x)As alloy with significant bowing."
+    },
+    "CdS_ZnS": {
+      "matA": "CdS",
+      "matB": "ZnS",
+      "bowing_parameter_eV": 0.61,
+      "description": "Cd(x)Zn(1-x)S alloy for UV-blue emission tuning."
+    },
+    "CdSe_ZnSe": {
+      "matA": "CdSe",
+      "matB": "ZnSe",
+      "bowing_parameter_eV": 0.35,
+      "description": "Cd(x)Zn(1-x)Se alloy for wide visible range tuning."
+    }
+  }
+}

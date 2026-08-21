@@ -1,0 +1,293 @@
+Band Gap Engineering in Semiconductor Quantum Dots
+A Quantitative Reference for Composition, Size, and Core/Shell Structure Effects — Compiled for Simulator Development
+Prepared as a technical reference document. Compiled from the peer-reviewed literature on the effective-mass approximation, k·p theory, and core/shell heterostructure modeling of colloidal and epitaxial quantum dots.
+Scope and Intent
+This document consolidates the physics governing the electronic band gap of semiconductor quantum dots (QDs) into a form suitable for direct implementation in a numerical simulator. It covers three coupled dependencies:
+Composition — how the bulk (parent) band gap of a binary or alloyed semiconductor sets the baseline gap, including Vegard's-law interpolation and bowing in ternary alloys.
+Radius (quantum confinement) — how shrinking the nanocrystal radius blue-shifts the gap, via the effective-mass approximation (Brus model), its finite-barrier correction, and its known breakdown regime.
+Core/shell architecture — how a shell of a second material changes the effective gap through band offsets (Type I, Type II, quasi-Type II), wavefunction leakage, and lattice-mismatch strain.
+Every formula below is standard in the nanocrystal-physics literature (Brus 1986; Efros & Efros 1982; Kayanuma 1988; and the core/shell extensions of Piryatinski, Schrier/Wang, and others). Material parameters are collected in Section 5 with source attributions so you can swap in updated values as needed. Section 6 gives a concrete numerical algorithm (finite-difference radial Schrödinger solver) so the physics here maps directly onto code.
+1. Physical Framework: Why Confinement Changes the Gap
+In a bulk semiconductor, electrons and holes occupy delocalized Bloch states, and the minimum energy to create an electron–hole pair is the bulk band gap Eg,bulk. When a crystal is shrunk to a radius R comparable to or smaller than the natural spatial extent of the electron–hole pair — the exciton Bohr radius:
+aB = ħ²·4πε0εr / e2 · (1/me* + 1/mh*)   (1.1)
+the carriers are forced into a finite box. Quantum mechanics penalizes localization with kinetic energy (the particle-in-a-box effect), so both the electron and hole ground-state energies rise as R shrinks. This is quantum confinement, and it is the dominant, universal mechanism by which QD band gap depends on size, regardless of material. Three confinement regimes are usually distinguished:
+Regime
+Condition
+Physical picture
+Strong confinement
+R < aB
+Electron and hole confined independently; Coulomb attraction treated as a perturbation. Brus equation is accurate here.
+Intermediate confinement
+R ≈ aB
+Correlated electron–hole motion; simple EMA becomes approximate.
+Weak confinement
+R > aB
+Center-of-mass exciton motion is quantized; gap shift is small (bulk-like).
+Table 1.1 — Confinement regimes for a spherical quantum dot of radius R against exciton Bohr radius aB.
+Composition changes the gap through a completely different, independent channel: it sets Eg,bulk, the effective masses me*, mh*, and the dielectric constant εr that then enter the confinement formulas. Core/shell architecture changes the gap through a third channel: it modifies the confinement potential landscape itself (finite barriers instead of infinite walls) and introduces strain from lattice mismatch at the interface. All three effects are additive in the sense that they all feed into the same underlying Schrödinger problem — Section 6 shows how to solve that problem numerically once all three are combined.
+2. Composition Dependence
+2.1 Binary compounds
+For a binary QD (e.g., CdSe, PbS, InP), composition dependence enters only through the choice of bulk parameters Eg,bulk, me*, mh*, εr, listed per-material in Section 5. There is no continuous composition variable — you select a row from the parameter table.
+2.2 Ternary and alloyed compounds
+For alloyed nanocrystals such as CdSexS1-x, InxGa1-xAs, or CdxZn1-xS, the bulk gap is interpolated between the two end-member binaries using Vegard's law with a bowing correction:
+Eg(AxB1-xC) = x·Eg(AC) + (1−x)·Eg(BC) − b·x(1−x)   (2.1)
+where x is the alloy fraction and b is the empirical bowing parameter (typically 0.3–1.2 eV depending on the alloy pair; it must be looked up per system — it is not derivable from the end members alone). The same linear-interpolation-plus-bowing form is used for effective masses, lattice constants, and dielectric constants, generally with negligible or zero bowing for those quantities (i.e., simple linear interpolation is usually an adequate approximation for m* and εr even when Eg bows).
+Implementation note for the simulator: expose composition x as a free parameter that re-derives Eg,bulk(x), me*(x), mh*(x), and εr(x) before the radius-dependent (Section 3) and shell (Section 4) calculations run. This lets one slider capture, e.g., the CdSe→CdS or InAs→InP transition continuously.
+3. Radius Dependence — The Effective-Mass (Brus) Model
+3.1 Infinite-barrier derivation
+Model the QD as a sphere of radius R with an infinitely high confining potential at the surface. Solving the single-particle Schrödinger equation separately for the electron and the hole (each treated with its own bulk effective mass, the parabolic-band approximation) gives a ground-state (1S) kinetic confinement energy for each carrier:
+Econf = ħ²π² / (2R2) · (1/me* + 1/mh*)   (3.1)
+Adding the attractive electron–hole Coulomb interaction (screened by the dielectric constant, treated as a first-order perturbation) gives the full Brus equation:
+Eg(R) = Eg,bulk + ħ²π² / (2R2) · (1/me* + 1/mh*) − 1.8e2 / (4πε0εrR)   (3.2)
+where me* and mh* are electron and hole effective masses (in units of the free electron mass m0), εr is the (typically static or an intermediate) dielectric constant of the material, and the constant 1.8 is the Coulomb overlap integral for the 1S hydrogenic ground state in a sphere. A third, usually small, term for spatial correlation (~0.248ERy*, the effective Rydberg energy) is sometimes retained for low-dielectric-constant materials but is negligible for most II–VI and IV–VI QDs and is commonly dropped:
+Eg(R) ≈ Eg,bulk + ħ²π² / (2R2) · (1/me* + 1/mh*) − 1.8e2 / (4πε0εrR) − 0.248ERy*   (3.3)
+The two competing terms in Eq. 3.2 explain the shape of the size curve: the confinement term scales as 1/R2 (dominant at small R, always blue-shifting) while the Coulomb term scales as 1/R (always red-shifting, weaker at small R). The net result is a monotonic blue shift of Eg as R decreases, but with a slightly sub-quadratic slope compared to the confinement term alone.
+3.2 Finite-barrier correction
+Eq. 3.2 assumes an infinite potential wall, which is unphysical — real QDs (bare or ligand-passivated) have a finite barrier V0 at the surface, and the wavefunction leaks outside the nanocrystal. This matters most for small R and small m*, where Eq. 3.2 systematically overestimates the blue shift. The finite-depth spherical well replaces the boundary condition ψ(R) = 0 with a transcendental matching condition. For a 1S state with barrier height V0, the confinement energy E (relative to the well bottom) solves:
+−k cot(kR) = κ   with   k = √(2min*E) / ħ,   κ = √(2mout*(V0 − E)) / ħ   (3.4)
+solved numerically (bisection or shooting method — see Section 6) rather than in closed form. For V0 → ∞ this recovers Eq. 3.1 exactly. Typical organic-ligand or vacuum barriers used in the literature are V0 ≈ 2–4 eV for the electron and similarly for the hole; for core/shell QDs, V0 is replaced by the actual band offset of the shell material (Section 4), which is the physically correct and strongly recommended approach for any simulator aiming for quantitative accuracy.
+3.3 Known limitations of the EMA/Brus approach
+Breaks down below roughly 1.5–2 nm radius, where the parabolic-band, bulk-effective-mass assumption fails and atomistic effects (tight-binding, pseudopotential, or DFT) are needed. Below this size the effective mass itself becomes size-dependent.
+Assumes a perfect sphere; real QDs are often faceted, and shape anisotropy shifts and splits levels.
+Assumes parabolic, isotropic bands; this is a poor approximation for PbS/PbSe (multivalley, non-parabolic) and for the valence bands of wurtzite II–VI materials (heavy hole/light hole/split-off structure). Section 5 flags which materials need the multiband correction.
+Ignores surface/trap states, dielectric confinement (image-charge) corrections at the QD/ligand interface, and electron–hole exchange (which splits bright/dark exciton states by a few to tens of meV — usually irrelevant for a band-gap-only simulator but relevant for fine-structure or PL linewidth work).
+Practical guidance: use Eq. 3.2 (infinite well) as the fast default; use Eq. 3.4 (finite well, numerically solved) when accuracy below ~2–3 nm matters or when modeling a shell explicitly; flag results below ~1.5 nm radius as EMA-unreliable in the UI.
+4. Core/Shell Structures
+4.1 Classification by band alignment
+Coating a core nanocrystal with a shell of a second semiconductor changes the confinement potential from a single finite well to a two- (or multi-) region step potential defined by the conduction- and valence-band offsets between core and shell. The resulting electronic structure falls into three regimes, determined entirely by how the core and shell band edges line up:
+Type
+Band alignment
+Carrier localization
+Example systems
+Type I
+Shell CB above core CB; shell VB below core VB (shell gap fully straddles core gap)
+Both electron and hole confined in the core
+CdSe/ZnS, CdSe/CdS (thin shell), InP/ZnS
+Quasi-Type II
+One band edge (usually CB) nearly aligned between core/shell; the other has a large offset
+One carrier confined to core; the other delocalized over core+shell
+CdSe/CdS (thick shell), PbS/CdS
+Type II
+CB and VB both offset in the same direction (staggered gaps)
+Electron and hole spatially separated into different regions (core vs. shell)
+CdTe/CdSe, ZnTe/ZnSe, CdSe/ZnTe
+Table 4.1 — Core/shell band-alignment classification. The type is not a material constant alone — it can depend on core size and shell thickness, since confinement shifts the effective (size-dependent) band edges relative to each other.
+4.2 Multi-region effective-mass model
+The rigorous approach solves the radial envelope-function Schrödinger equation separately in each region (core, shell, and — if modeled — outer barrier/ligand layer), using the position-dependent effective mass and a step confinement potential built from the band offsets:
+[ −ħ²/2 · d/dr (1/m*(r)) · d/dr + l(l+1)ħ²/(2m*(r)r2) + V(r) ] u(r) = E u(r)   (4.1)
+where u(r) = r·Rnl(r) is the reduced radial wavefunction, l is the orbital angular momentum quantum number (l = 0 for the ground 1S state), and V(r) is a piecewise-constant step function equal to 0 in the core and to the appropriate band offset (ΔEc for the electron equation, ΔEv for the hole equation) in the shell. At each interface, the physically correct matching (BenDaniel–Duke) boundary condition is continuity of u(r) and continuity of (1/m*)·du/dr — not continuity of the plain derivative, because the effective mass changes discontinuously at the interface:
+ucore(r0) = ushell(r0)    ;    (1/mcore*)·ucore'(r0) = (1/mshell*)·ushell'(r0)   (4.2)
+Solve Eq. 4.1 independently for the electron (mass me*, offset ΔEc) and the hole (mass mh*, offset ΔEv) to get ground-state energies Ee and Eh. The effective optical gap of the core/shell QD is then:
+Eg,QD = Eg,core + Ee + Eh − Eb(electron–hole binding, Coulomb + polarization)   (4.3)
+This is the same overlap-and-add structure as Eq. 3.2/3.3, but now Ee and Eh come from the numerical two- (or three-) region solve rather than the closed-form infinite-well result, and Eb should include a dielectric-mismatch (image-charge) correction if the core, shell, and surrounding medium have significantly different dielectric constants — this term can be a sizeable fraction of an eV in thin-shell QDs and should not be neglected in a high-accuracy simulator.
+4.3 Determining the band offsets
+ΔEc and ΔEv are not free — they follow from the bulk electron affinities (or, more rigorously, from an internally consistent band-alignment reference such as Van de Walle's model-solid theory / natural band offsets). A simple and simulator-friendly approach:
+Look up (or maintain in your parameter table) the vacuum-referenced conduction-band-minimum and valence-band-maximum energies for each candidate material at its bulk lattice constant.
+ΔEc = CBM(shell) − CBM(core); ΔEv = VBM(core) − VBM(shell). A positive value means the corresponding shell band edge presents an energetic barrier to that carrier remaining in the core.
+Representative literature values worth hard-coding as defaults: CdSe/CdS conduction-band offset is small and debated, roughly 0 to 0.3 eV (this ambiguity is exactly why CdSe/CdS transitions from Type I at thin shells to quasi-Type II at thick shells); CdSe/ZnS is a deep Type I well with a conduction-band offset on the order of 0.9 eV and valence-band offset on the order of 0.5 eV; PbS/CdS is Type I with a conduction-band offset of roughly 0.5 eV.
+Implementation note: expose ΔEc and ΔEv as directly editable parameters (with literature defaults per material pair) rather than hard-derived-only quantities — published offset values disagree by a few tenths of an eV across methods, and a simulator intended for design work benefits from letting the user calibrate against a known experimental data point.
+4.4 Strain from lattice mismatch
+Because the core and shell are different crystals, a shell grown epitaxially onto a core almost always has a different unstrained lattice constant, producing interfacial strain. The lattice mismatch is:
+η = (ashell − acore) / acore   (4.4)
+For a spherically symmetric core/shell system, the resulting radial strain field can be obtained from continuum elasticity theory (matching radial stress and displacement at the interface, using each material's bulk modulus and shear modulus). Once the strain tensor is known, it shifts the local band edges through deformation-potential theory (Van de Walle formalism):
+ΔEc = ac·(εxx + εyy + εzz)     ;     ΔEv,hydro = av·(εxx + εyy + εzz)   (4.5)
+where ac and av are the conduction- and valence-band hydrostatic deformation potentials of the strained material (tabulated per material, typically −2 to −8 eV for ac in common II–VI/III–V semiconductors), and the εii are strain-tensor components from the elasticity solution. Non-hydrostatic (shear) strain further splits the heavy-hole/light-hole degeneracy via the Bir–Pikus Hamiltonian, which matters for fine-structure calculations but can often be neglected for a band-gap-only simulator.
+For colloidal core/shell QDs the effect is not academic: reported compressive strain at CdSe/ZnS interfaces (η ≈ 12% lattice mismatch) has been measured to shift the core band gap upward by roughly 0.15–0.3 eV relative to the unstrained value, comparable in magnitude to the confinement shift itself for thick shells. CdSe/CdS, with a much smaller ~4% mismatch, shows a correspondingly smaller strain-induced shift. A simulator that omits strain will systematically under-predict the gap of highly lattice-mismatched core/shell systems (e.g., CdSe/ZnS, CdSe/ZnSe) even though it may work acceptably for lattice-matched pairs (e.g., CdSe/CdS).
+4.5 Practical modeling ladder
+For simulator development, three fidelity levels are recommended, in increasing order of accuracy and computational cost:
+Level 1 (fast/qualitative): Effective bulk gap of the shell material treated as an infinite barrier at the core surface (i.e., ignore the shell as a distinct region; equivalent to Eq. 3.2/3.3 with the bare-core radius). Cheap but only qualitatively correct, and wrong for quasi-Type II/Type II systems.
+Level 2 (recommended default): Two-region finite-well solve (Eq. 4.1–4.3) with literature band offsets, no strain. Captures Type I/II/quasi-Type II behavior and shell-thickness dependence correctly; this is the right default fidelity for a general-purpose band-gap simulator.
+Level 3 (high accuracy): Level 2 plus the strain correction of Eq. 4.5, plus (if pursuing spectroscopic accuracy) a multiband k·p or tight-binding treatment of the valence band instead of the single parabolic hole band. Needed for quantitative comparison against experiment on strongly lattice-mismatched or IV–VI systems.
+5. Material Parameter Tables
+Values below are room-temperature (≈300 K) literature values compiled from multiple sources (Madelung's Semiconductors: Data Handbook; Vurgaftman, Meyer & Ram-Mohan's III–V band-parameter review; and QD-specific EMA studies cited in Section 7). Where sources disagree — which is common, especially for hole effective masses and dielectric constants — a representative literature value is given and the observed range is noted. Treat these as calibratable defaults, not fixed constants: cross-check against a known experimental absorption peak for your specific synthesis before treating simulator output as quantitative.
+5.1 II–VI compounds
+Material
+Eg,bulk (eV)
+me*/m0
+mh*/m0
+εr (static)
+a (Å)
+Structure
+CdSe
+1.74
+0.12–0.13
+0.45 (avg); 0.25–0.7 range by band
+9.3–9.6 (static); 6.2 (high-freq)
+4.30 / 7.01 (wurtzite a/c)
+Wurtzite
+CdS
+2.42–2.50
+0.18–0.21
+0.53–0.8
+8.9–10
+4.14 / 6.72 (wurtzite a/c)
+Wurtzite / ZB
+CdTe
+1.475–1.50
+0.096–0.11
+0.35–0.40
+10.2
+6.482 (ZB)
+ZB
+ZnS
+3.60–3.68
+0.25–0.28
+0.58 (light); up to 1.76 (heavy)
+8.3 (static); 5.2 (high-freq)
+5.41 (ZB)
+ZB / wurtzite
+ZnSe
+2.70
+0.17
+0.60
+9.2
+5.668 (ZB)
+ZB
+ZnTe
+2.25–2.39
+0.15–0.20
+0.60
+8.7–9.7
+6.101 (ZB)
+ZB
+Table 5.1 — II–VI binary parameters. Wurtzite valence bands split into heavy-hole/light-hole/split-off sub-bands (crystal-field splitting ~0.025 eV for CdSe, ~0.04 eV for CdS); the single mh* listed is the commonly used heavy-hole (EMA) value.
+5.2 IV–VI compounds (narrow gap, high dielectric constant)
+Material
+Eg,bulk (eV, 300K)
+me*/m0
+mh*/m0
+ε∞
+ε0 (static)
+a (Å)
+PbS
+0.41
+≈0.09–0.10 (near-isotropic)
+≈0.09–0.10 (near-isotropic)
+17.2
+169–190
+5.936 (rock salt)
+PbSe
+0.27–0.28
+≈0.04–0.07 (anisotropic, L-valley)
+≈0.04–0.07 (anisotropic, L-valley)
+22.9–23
+210
+6.117 (rock salt)
+PbTe
+0.32
+≈0.02–0.06 (anisotropic)
+≈0.02–0.06 (anisotropic)
+32.8–36
+414–428
+6.462 (rock salt)
+Table 5.2 — IV–VI (lead chalcogenide) parameters. These materials have multivalley, strongly non-parabolic L-point bands and near-equal electron/hole masses (giving nearly symmetric confinement); a simple isotropic single-band EMA is a rougher approximation here than for II–VI/III–V materials, and quantitative work should use a two-band Kane (nonparabolic) dispersion instead of Eq. 3.2.
+5.3 III–V compounds
+Material
+Eg,bulk (eV, 300K)
+me*/m0
+mh*/m0 (heavy)
+εr (static)
+a (Å)
+InP
+1.35
+0.077–0.080
+0.60 (0.089 light-hole)
+12.5
+5.869 (ZB)
+InAs
+0.36 (0.417 low-T)
+0.023–0.026
+0.41
+15.15
+6.058 (ZB)
+GaAs
+1.42
+0.067
+0.45–0.50
+12.9
+5.653 (ZB)
+InSb
+0.17
+0.014
+0.43
+16.8
+6.479 (ZB)
+Table 5.3 — III–V (zinc blende) parameters. Values are broadly consistent with the widely used Vurgaftman–Meyer–Ram-Mohan compilation of III–V band parameters; consult that review directly for temperature dependence (Varshni parameters) and spin–orbit splitting if extending the simulator to finite temperature.
+5.4 Representative core/shell band offsets
+Core/Shell pair
+Alignment type
+ΔEc (eV)
+ΔEv (eV)
+Lattice mismatch η
+CdSe / CdS
+Type I → quasi-Type II with shell thickness
+≈0.0–0.3 (debated)
+≈0.5–0.6
+≈4%
+CdSe / ZnS
+Type I (deep well)
+≈0.9
+≈0.5–0.9
+≈12%
+CdSe / ZnSe
+Type I
+≈0.4–0.9
+≈0.6
+≈7%
+CdTe / CdSe
+Type II
+staggered (offset ~0.4–0.6 opposing VB)
+≈0.57 (VB offset)
+≈6.5%
+ZnTe / ZnSe
+Type II
+staggered
+significant, opposing CB
+≈7.5%
+PbS / CdS
+Type I
+≈0.5
+large (deep hole confinement)
+n/a (rock-salt/ZB, large mismatch)
+InP / ZnS
+Type I
+moderate-to-large
+moderate-to-large
+≈7.7%
+Table 5.4 — Representative core/shell offsets compiled from multiple modeling and photoemission studies. Reported offset values vary noticeably by measurement/calculation method (optical modeling vs. XPS vs. DFT); treat as calibratable starting points, per the guidance in Section 4.3.
+6. Numerical Algorithm for the Simulator
+The following algorithm reproduces every formula above in a form directly translatable to code (Python/NumPy, MATLAB, or C++), and generalizes cleanly from a bare core (Section 3) to an arbitrary number of concentric shells (Section 4).
+6.1 Recommended architecture
+Input layer: material composition(s) and fraction x per region (Section 2), region radii (core radius R1, shell outer radii R2, R3, …), and a materials database keyed by composition returning Eg,bulk, me*, mh*, ε, a (lattice constant), and band-offset references (Section 5).
+Fast-path mode (Eq. 3.2/3.3): closed-form evaluation for a bare core or Level-1 core/shell approximation — use this for real-time UI sliders.
+Accurate mode (Eq. 4.1/4.2, Level 2–3): discretize the radial coordinate r from 0 to an outer boundary Rmax (a few times the outermost shell radius, with a finite or infinite outer barrier), build the piecewise m*(r) and V(r) profiles, and solve the resulting 1-D radial eigenvalue problem with a finite-difference or shooting-method solver (below) for both the electron and hole equations independently.
+Post-processing: combine Ee, Eh, the bulk gap of the emitting region, and the Coulomb/strain corrections (Eq. 4.3, 4.5) into the final Eg,QD; optionally convert to emission wavelength via λ = hc / Eg,QD.
+6.2 Finite-difference radial solver (recommended core method)
+Discretize u(r) on a uniform grid ri = iΔr, i = 1…N, with u(0) = 0 and u(Rmax) = 0 (hard outer wall — place Rmax far enough out, or a few eV outer barrier, that this does not distort the bound state). Eq. 4.1 becomes a real, symmetric tridiagonal matrix eigenvalue problem when written in terms of mass-weighted finite differences:
+−ħ²/2 · [ 2/(mi-1/2+mi+1/2) ] · [ (ui+1−ui)/mi+1/2 − (ui−ui-1)/mi-1/2) ] / Δr2 + Viui = Eui   (6.1)
+(this symmetrized form automatically enforces the BenDaniel–Duke matching condition of Eq. 4.2 at every interface without special-casing it). Assemble this as an N×N tridiagonal matrix and find its lowest eigenvalue/eigenvector with a standard sparse eigensolver (e.g., scipy.sparse.linalg.eigsh in Python) — this gives the electron ground-state energy Ee and wavefunction directly; repeat with the hole mass profile and Vh(r) for Eh. A grid spacing Δr ≈ R1/200 to R1/500 is typically sufficient for meV-level convergence; always run a grid-convergence check (halve Δr and confirm the eigenvalue changes by < 1 meV) before trusting an output.
+6.3 Alternative: shooting method
+For a single bound state (the 1S ground state, which is what a band-gap-only simulator needs), a shooting method is simpler to implement and just as accurate: integrate the radial equation outward from r = 0 for a trial energy E, using the matching conditions of Eq. 4.2 at each interface, and adjust E (via bisection) until u(Rmax) → 0 (or matches the correct decaying-exponential tail in the finite-barrier case). This avoids building a full matrix and is well-suited to a lightweight, dependency-free simulator core.
+6.4 Validation checklist
+Recover the bulk limit: as R → ∞, Eg(R) → Eg,bulk.
+Recover the known infinite-well closed form (Eq. 3.2) in the limit of an infinite barrier — use this as a unit test for the finite-difference/shooting solver.
+Reproduce at least one well-documented experimental calibration point per material family, e.g., CdSe QDs of ~2.5–3 nm diameter emitting/absorbing in the ~530–560 nm range; PbS QDs of ~3–6 nm diameter absorbing in the ~950–1400 nm range.
+Flag (in the UI, not just internally) any result computed at R below ~1.5 nm as outside the EMA's validated range.
+7. Key References
+The following are the foundational and representative papers behind the models above. They are listed for further reading and parameter cross-checking, not reproduced here beyond standard bibliographic description.
+L. E. Brus, "Electronic wave functions in semiconductor clusters: experiment and theory," J. Phys. Chem. 90, 2555 (1986) — origin of the effective-mass size-scaling model (the "Brus equation").
+Al. L. Efros and A. L. Efros, "Interband absorption of light in a semiconductor sphere," Sov. Phys. Semicond. 16, 772 (1982) — independent derivation of quantum confinement scaling.
+Y. Kayanuma, "Quantum-size effects of interacting electrons and holes in semiconductor microcrystals with different band gaps," Phys. Rev. B 38, 9797 (1988) — finite-barrier and correlation corrections.
+I. Vurgaftman, J. R. Meyer, L. R. Ram-Mohan, "Band parameters for III–V compound semiconductors and their alloys," J. Appl. Phys. 89, 5815 (2001) — standard reference compilation for III–V effective masses, gaps, and offsets.
+O. Madelung (ed.), Semiconductors: Data Handbook, 3rd ed., Springer (2004) — standard reference compilation for II–VI/IV–VI bulk parameters.
+C. G. Van de Walle, "Band lineups and deformation potentials in the model-solid theory," Phys. Rev. B 39, 1871 (1989) — deformation-potential framework used for strain corrections in Section 4.4.
+P. Reiss, M. Protière, L. Li, "Core/shell semiconductor nanocrystals," Small 5, 154 (2009) — review of core/shell synthesis and Type I/II classification.
+Review on core/shell QD classification, materials, and theoretical modeling, Materials Science & Engineering B (2022) — survey of Type I/quasi-Type II/Type II band-alignment modeling approaches used in Section 4.1.
+Analytical one-band effective-mass treatments of Type I and Type II spherical core/shell quantum dots (CdTe/ZnSe, ZnTe/ZnSe systems) incorporating elastic-continuum strain, J. Optoelectron. Adv. Mater. (2013) — basis for the strain-coupled EMA model in Section 4.4.
+Experimental and modeling study of strain effects on CdSe core and CdSe/ZnS core/shell band gap and diameter vs. temperature, Advances in Materials Science and Engineering (2019) — source of the representative CdSe/ZnS strain-shift magnitude quoted in Section 4.4.
+Optical/XPS determination of band alignment in CdSe/CdS core/shell quantum dots — source of the CdSe/CdS conduction-band-offset debate noted in Section 4.3.
+Room-temperature single-emitter study of PbS/CdS core/shell quantum dots with an explicit two-band effective-mass model and stated PbS/CdS parameters, ACS Nano (2021) — source of the PbS/CdS parameters in Table 5.4.
+Size-dependent electronic and optical properties of InAs quantum dots via empirical pseudopotential method, Optics Communications (2016) — cross-check reference for III–V QD size scaling beyond simple EMA.
+Bandgap engineering of InP-based core/shell heterostructures through shell composition and thickness — experimental Type I/Type II comparison for InP/ZnS, InP/ZnSe, InP/CdS, InP/CdSe, used for Table 5.4 InP entries.
+A note on accuracy for simulator use
+No closed-form model — including every equation in this document — reproduces experimental QD spectra to better than roughly 0.05–0.15 eV without per-material calibration, because real nanocrystals have facets, surface reconstruction, ligand-dependent surface dipoles, size-distribution broadening, and (for the smallest sizes) genuinely atomistic electronic structure that a continuum effective-mass model cannot capture. The physics above is standard, peer-reviewed, and appropriate as the computational core of a simulator; treat its output as physically grounded and trend-accurate, and calibrate the offset/barrier parameters against at least one known experimental spectrum per material system before relying on absolute numbers.
